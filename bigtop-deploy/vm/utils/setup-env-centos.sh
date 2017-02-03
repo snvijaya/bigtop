@@ -15,10 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo "SN: in setenv"
 enable_local_repo=${1:-false}
 
+echo "SN: calling toolchain"
 bash /bigtop-home/bigtop_toolchain/bin/puppetize.sh
 
+echo "SN: installing rng-tools"
 # Setup rng-tools to improve virtual machine entropy performance.
 # The poor entropy performance will cause kerberos provisioning failed.
 yum -y install rng-tools
@@ -34,3 +37,4 @@ else
     echo "local yum = $enable_local_repo ; NOT Enabling local yum.  Packages will be pulled from remote..."
 fi
 
+echo "SN: quitting setenv"

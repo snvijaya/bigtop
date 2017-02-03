@@ -19,24 +19,30 @@ usage() {
     echo "usage: $PROG [-C file ] args"
     echo "       -C file                                   Use alternate file for vagrantconfig.yaml"
     echo "  commands:"
-    echo "       -c NUM_INSTANCES, --create=NUM_INSTANCES  Create a Docker based Bigtop Hadoop cluster"
-    echo "       -p, --provision                           Deploy configuration changes"
-    echo "       -s, --smoke-tests                         Run Bigtop smoke tests"
-    echo "       -d, --destroy                             Destroy the cluster"
+    echo "       -c hostname, --create=hostname Create a Docker based Bigtop Hadoop cluster"
     echo "       -h, --help"
     exit 1
 }
 
 create() {
-    echo "\$num_instances = $1" > config.rb
-    echo "\$vagrantyamlconf = \"$vagrantyamlconf\"" >> config.rb
-    vagrant up --no-parallel
+    echo "\$num_instances = 1" > config.rb
+    host_name="$1"
+    echo "SN: $host_name"
+    vagrantfilewithhost="vagrantconfig$host_name.yaml"
+    cp $vagrantyamlconf $vagrantfilewithhost
+    echo "name: \"$host_name\"" >> $vagrantfilewithhost
+    echo "\$vagrantyamlconf = \"$vagrantfilewithhost\"" >> config.rb
+    echo "SN: vagrant up start "
+    vagrant up 
+    echo "SN: vagrant up end"
     if [ $? -ne 0 ]; then
         echo "Docker container(s) startup failed!";
 	exit 1;
     fi
-    nodes=(`vagrant status |grep bigtop |awk '{print $1}'`)
+    nodes=(`vagrant status |grep $host_name |awk '{print $1}'`)
+    echo "SN: $nodes"
     hadoop_head_node=(`echo "hostname -f" |vagrant ssh ${nodes[0]} |tail -n 1`)
+    echo "SN: $hadoop_head_node"
     repo=$(get-yaml-config repo)
     components="[`echo $(get-yaml-config components) | sed 's/ /, /g'`]"
     jdk=$(get-yaml-config jdk)
@@ -46,7 +52,9 @@ create() {
     # setup environment before running bigtop puppet deployment
     for node in ${nodes[*]}; do
         (
+        echo "SN: $node calling setenv"
         echo "/bigtop-home/bigtop-deploy/vm/utils/setup-env-$distro.sh $enable_local_repo" |vagrant ssh $node
+        echo "SN: $node calling provision"
         echo "/vagrant/provision.sh $hadoop_head_node $repo \"$components\" $jdk" |vagrant ssh $node
         ) &
     done
@@ -60,28 +68,8 @@ create() {
     wait
 }
 
-provision() {
-    nodes=(`vagrant status |grep bigtop |awk '{print $1}'`)
-    for node in ${nodes[*]}; do
-        bigtop-puppet $node &
-    done
-    wait
-}
-
-smoke-tests() {
-    nodes=(`vagrant status |grep bigtop |awk '{print $1}'`)
-    smoke_test_components="`echo $(get-yaml-config smoke_test_components) | sed 's/ /,/g'`"
-    echo "/bigtop-home/bigtop-deploy/vm/utils/smoke-tests.sh \"$smoke_test_components\"" |vagrant ssh ${nodes[0]}
-}
-
-
-destroy() {
-    vagrant destroy -f
-    rm -rvf ./hosts ./config.rb
-}
-
 bigtop-puppet() {
-    echo "puppet apply -d --modulepath=/bigtop-home/bigtop-deploy/puppet/modules:/etc/puppet/modules /bigtop-home/bigtop-deploy/puppet/manifests/site.pp" |vagrant ssh $1
+    echo "puppet apply -d  --parser future --modulepath=/bigtop-home/bigtop-deploy/puppet/modules:/etc/puppet/modules /bigtop-home/bigtop-deploy/puppet/manifests" |vagrant ssh $1
 }
 
 get-yaml-config() {
@@ -118,15 +106,6 @@ while [ $# -gt 0 ]; do
         fi
 	vagrantyamlconf=$2
         shift 2;;
-    -p|--provision)
-        provision
-        shift;;
-    -s|--smoke-tests)
-        smoke-tests
-        shift;;
-    -d|--destroy)
-        destroy
-        shift;;
     -h|--help)
         usage
         shift;;

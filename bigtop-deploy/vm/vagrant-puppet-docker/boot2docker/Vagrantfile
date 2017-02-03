@@ -30,9 +30,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.customize ["modifyvm", :id, "--memory", CONF["boot2docker"]["memory_size"]]
       vb.customize ['modifyvm', :id, '--cpus', CONF["boot2docker"]['number_cpus']]
     end
-    node.vm.network "forwarded_port", host: CONF["namenode_ui_port"], guest: 50070
-    node.vm.network "forwarded_port", host: CONF["yarn_ui_port"], guest: 8088
-    node.vm.network "forwarded_port", host: CONF["hbase_ui_port"], guest: 60010
+#    node.vm.network "forwarded_port", host: CONF["namenode_ui_port"], guest: 50070
+#    node.vm.network "forwarded_port", host: CONF["yarn_ui_port"], guest: 8088
+#    node.vm.network "forwarded_port", host: CONF["hbase_ui_port"], guest: 60010
   end
 
 end

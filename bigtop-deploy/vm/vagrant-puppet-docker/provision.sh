@@ -16,13 +16,14 @@
 # limitations under the License.
 
 sysctl kernel.hostname=`hostname -f`
-
+echo "SN: provisioning"
 # Unmount device /etc/hosts and replace it by a shared hosts file
 echo -e "`hostname -i`\t`hostname -f`" >> /vagrant/hosts
 umount /etc/hosts
 mv /etc/hosts /etc/hosts.bak
 ln -s /vagrant/hosts /etc/hosts
 
+echo "SN: preparing hierdata"
 # Prepare puppet configuration file
 mkdir -p /etc/puppet/hieradata
 cp /bigtop-home/bigtop-deploy/puppet/hiera.yaml /etc/puppet
@@ -35,3 +36,5 @@ hadoop_cluster_node::cluster_components: $3
 bigtop::jdk_package_name: $4
 hadoop::common_hdfs::testonly_hdfs_sshkeys: "yes"
 EOF
+
+echo "SN: quitting provisioner"

@@ -32,14 +32,14 @@ class hadoop_hbase {
     }
   }
 
-  class client-package  {
+  class client_package  {
     package { "hbase":
       ensure => latest,
     } 
   }
 
   class common_config ($rootdir, $zookeeper_quorum, $kerberos_realm = "", $heap_size="1024") {
-    include client-package
+    include client_package
     if ($kerberos_realm) {
       require kerberos::client
       kerberos::host_keytab { "hbase": 
