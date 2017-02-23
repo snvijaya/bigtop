@@ -164,8 +164,9 @@ public class TestFileAppend {
     sh.exec("rm -rf $testAppendOutput", "rm -rf 3mboutput.file$date", "rm -rf 3mbinput.file$date");
   }
 
-  @Test
+  //@Test
   public void testFsckSanity() {
+    context.getTestSuite().getTestCaseByName("testFsckSanity").setDisabled(true);
     FileSystem fs = FileSystem.get(conf);
 
     // test file creation

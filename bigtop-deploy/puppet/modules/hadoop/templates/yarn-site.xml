@@ -30,6 +30,11 @@
     <value>/etc/yarn.keytab</value>
   </property>
 
+<property>
+  <name>yarn.scheduler.capacity.maximum-am-resource-percent</name>
+  <value>100</value>
+</property>
+
   <property>
     <name>yarn.web-proxy.principal</name>
     <value>yarn/_HOST@<%= @kerberos_realm %></value>
@@ -85,6 +90,11 @@
   <property>
     <name>yarn.resourcemanager.resource-tracker.address.rm<%= idx+1 %></name>
     <value><%= host %>:<%= @hadoop_rt_port %></value>
+  </property>
+
+  <property>
+    <name>yarn.resourcemanager.hostname<%= idx+1 %></name>
+    <value><%= @hadoop_rm_host %></value>
   </property>
 
   <property>
@@ -208,4 +218,10 @@
     <value><%= @yarn_resourcemanager_scheduler_class %></value>
   </property>
 <% end -%>
+
+  <property>
+    <name>yarn.nodemanager.vmem-pmem-ratio</name>
+    <value>100</value>
+  </property>
+
 </configuration>

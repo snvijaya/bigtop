@@ -1,3 +1,4 @@
+set -x
 #!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -30,11 +31,16 @@ echo -e "\n===== START TO RUN SMOKE TESTS: $SMOKE_TESTS =====\n"
 export HADOOP_CONF_DIR=/etc/hadoop/conf/
 export HADOOP_MAPRED_HOME=/usr/lib/hadoop-mapreduce/
 export HIVE_HOME=/usr/lib/hive/
+export HADOOP_HOME=/usr/lib/hadoop/
 export PIG_HOME=/usr/lib/pig/
 export FLUME_HOME=/usr/lib/flume/
 export SQOOP_HOME=/usr/lib/sqoop/
 export HIVE_CONF_DIR=/etc/hive/conf/
 export MAHOUT_HOME="/usr/lib/mahout"
+export GRADLE_USER_HOME="/root/.gradle"
+export GRADLE_HOME="/root/.gradle"
+echo GRADLE_USER_HOME $GRADLE_USER_HOME GRADLE_HOME $GRADLE_HOME
+unset MAHOUT_LOCAL
 
 su -s /bin/bash $HCFS_USER -c '/usr/bin/hadoop fs -mkdir /user/vagrant /user/root'
 su -s /bin/bash $HCFS_USER -c 'hadoop fs -chmod 777 /user/vagrant'
@@ -49,7 +55,7 @@ ALL_SMOKE_TASKS=""
 for s in `echo $SMOKE_TESTS | sed -e 's#,# #g'`; do
   ALL_SMOKE_TASKS="$ALL_SMOKE_TASKS bigtop-tests:smoke-tests:$s:test"
 done
-cd /bigtop-home && ./gradlew clean $ALL_SMOKE_TASKS -Psmoke.tests --info
+cd /bigtop && ./gradlew clean $ALL_SMOKE_TASKS -Psmoke.tests --debug
 # BIGTOP-2244 workaround: clean the top level buildSrc/build with the same
 # permissions as used for smoke-tests execution
 rm -rf buildSrc/build/test-results/binary

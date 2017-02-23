@@ -17,24 +17,31 @@
  */
 def tests_to_include() {
   return [
-      "TestBlockRecovery.groovy",
-      "TestDistCpIntra.groovy",
-      "TestFileAppend.groovy",
-      "TestFsck.groovy",
-      "TestHDFSQuota.groovy",
-      "TestHDFSCLI.java",
-      "TestTextSnappy.groovy",
-      "TestDFSAdmin.groovy",
-      "TestHDFSBalancer.groovy",
-      /*
-      "TestDFSCLI.java",        // Can't run until we learn how to change
-                                // effective user in the runtime
-      */
+//      "TestBlockRecovery.groovy",
+//      "TestFsck.groovy",
+// 	"TestHDFSQuota.groovy",
+// 	"TestHDFSCLI.java",
+// 	"TestDFSAdmin.groovy",
+// 	"TestHDFSBalancer.groovy",
+// 	"TestDFSCLI.java",
+
+	"TestDistCpIntra.groovy",
+	"TestFileAppend.groovy",
+	"TestTextSnappy.groovy",
   ];
+}
+
+repositories {
+   flatDir {
+        dirs '/usr/lib/hadoop/lib'
+   }
 }
 
 def junitVersion = '4.11'
 dependencies {
+  compile name: 'azure-data-lake-store-sdk-2.1.5'
+  compile name: 'hadoop-azure-datalake-2.0.0-SNAPSHOT'
+  compile name: 'com.fasterxml.jackson.core'
   compile group: 'junit', name: 'junit', version: junitVersion, transitive: 'true'
   compile group: 'org.apache.hadoop', name: 'hadoop-common',
       version: hadoopVersion, classifier: 'tests', transitive: 'true'

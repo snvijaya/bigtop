@@ -65,7 +65,7 @@ case ${ID}-${VERSION_ID} in
 	;;
     centos-7*)
         rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-	yum -y install hostname curl sudo unzip wget puppet
+	yum -y install hostname curl sudo unzip wget puppet git 
 	;;
     *)
 	echo "Unsupported OS ${ID}-${VERSION_ID}."
