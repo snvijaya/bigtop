@@ -16,6 +16,7 @@
 <!-- See the License for the specific language governing permissions and      -->
 <!-- limitations under the License.                                           -->
 
+<!--- REFER TO https://github.com/Azure/hadoop-azure-data-lake-pr/blob/c55e9b55457f4265eb51c62139132319489bbd97/src/site/markdown/index.md FOR AUTH FIELD EXPLANATION -->
 <configuration>
     <property>
       <name>adl.debug.override.localuserasfileowner</name>
@@ -24,7 +25,7 @@
 
     <property>
       <name>adl.suite.dfs.adls.sometoken.hostname</name>
-      <value></value>
+      <value></value> <!-- UPDATE -->
     </property>
 
     <property>
@@ -35,27 +36,27 @@
 
     <property>
       <name>adl.suite.dfs.adls.sometoken.mountpoint</name>
-      <value>/Clusters/DOCKER_HOST</value> <!-- DO NOT EDIT THIS -->
+      <value>/Clusters/DOCKER_HOST</value> <!-- DO NOT TAMPER WITH THIS VALUE -->
     </property>
 
   <property>
     <name>adl.suite.dfs.adls.oauth2.refresh.url</name>
-    <value></value>
+    <value></value> <!-- UPDATE -->
   </property>
 
   <property>
     <name>adl.suite.dfs.adls.oauth2.credential</name>
-    <value>value>
+    <value></value> <!-- UPDATE -->
   </property>
 
   <property>
     <name>adl.suite.dfs.adls.oauth2.client.id</name>
-    <value></value>
+    <value></value> <!-- UPDATE -->
   </property>
 
   <property>
     <name>adl.suite.dfs.adls.oauth2.access.token.provider.type</name>
-    <value></value>
+    <value></value> <!-- UPDATE -->
   </property>
 
 </configuration>
