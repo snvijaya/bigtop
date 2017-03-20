@@ -19,6 +19,11 @@
 <% namenode_hosts = Array(@hadoop_namenode_host) -%>
 <configuration>
 
+  <property>
+    <name>dfs.namenode.rpc-address</name>
+    <value>DOCKER_HOST:8020</value>
+  </property>
+
 <% if @ha != "disabled" -%>
   <!-- HA -->
 

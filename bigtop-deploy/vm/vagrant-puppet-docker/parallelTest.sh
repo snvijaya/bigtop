@@ -19,6 +19,8 @@ ADL_CONFIG_FILE_PATH=$6
 DELETECLUSTER=${7-true}
 CLUSTEREXISTS=${8-false}
 
+COMPONENT=$TESTDIR
+
 # ADL Jars - copied by plugin
 echo "SN: Jars copied to workspace"
 ls $WORK_SPACE/Driver/target/
@@ -29,7 +31,7 @@ echo ***SN: CLUSTEREXISTS = $CLUSTEREXISTS
 if [ "$CLUSTEREXISTS" = "false" ]; then
 # Create vagrant docker
 cd $CONFIG_DIR
-sudo ./singleNodeHadoop.sh --create $JOB_NAME $ADL_CONFIG_FILE_PATH
+sudo ./singleNodeHadoop.sh --create $JOB_NAME $ADL_CONFIG_FILE_PATH $COMPONENT
 fi
 
 # OUTPUT FILES
@@ -66,6 +68,9 @@ echo ***SN: Duplicate bigtop env so that tests can run
 sudo docker exec -i $CONTAINER_ID bash -lc "sudo cp -r /bigtop-home/ /bigtop/"
 sudo docker exec -i $CONTAINER_ID bash -lc "localedef -i en_US -f UTF-8 en_US.UTF-8"
 
+echo ***SN: Enable gradle daemonfor subsequent runs to be faster
+sudo docker exec -i $CONTAINER_ID bash -lc "touch ~/.gradle/gradle.properties && echo \"org.gradle.daemon=true\" >> ~/.gradle/gradle.properties"
+
 echo ***SN: COPY ADL JARS
 ls $WORK_SPACE | grep *.jar
 sudo ./copyJars.sh $CONTAINER_ID "$WORK_SPACE/SDK/target/" "$WORK_SPACE/Driver/target/" 
@@ -76,6 +81,7 @@ sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/createClusterAdlRoot.sh"
 sudo docker exec -i $CONTAINER_ID bash -lc "hdfs dfs -ls /"
 
 echo ***SN: restart services
+sudo docker exec -i $CONTAINER_ID bash -lc "jps"
 sudo docker exec -i $CONTAINER_ID bash -lc "sudo /vagrant/restart-bigtop.sh"
 fi
 
@@ -83,17 +89,13 @@ echo ***SN: CLEAN UP TEST REPORT DIRS
 sudo docker exec -i $CONTAINER_ID bash -lc "rm -r /bigtop/bigtop-tests/smoke-tests/$TESTDIR/build/reports/tests/*"
 
 echo ***SN: TRIGGER SMOKE TEST
-sudo docker exec -i $CONTAINER_ID bash -lc "/bigtop/bigtop-deploy/vm/utils/smoke-tests.sh $TESTDIR"
+sudo docker exec -i $CONTAINER_ID bash -lc "/bigtop/bigtop-deploy/vm/utils/smoke-tests.sh $TESTDIR" > $WORK_SPACE/output.txt
 
-# COLLECT OUTPUT
-sudo docker exec -i $CONTAINER_ID bash -lc "cat /bigtop/bigtop-tests/smoke-tests/$TESTDIR/build/test-results/TEST-*" > $WORK_SPACE/${resultFile}
-sudo docker exec -i $CONTAINER_ID bash -lc "mkdir -p /vagrant/htmlreport/$htmlReport"
-sudo docker exec -i $CONTAINER_ID bash -lc "cp -r /bigtop/bigtop-tests/smoke-tests/$TESTDIR/build/reports/tests/* /vagrant/htmlreport/$htmlReport" 
-sudo mv htmlreport/$htmlReport $WORK_SPACE/
-sudo sed '/encoding=/ d' ${WORK_SPACE}/${resultFile} > ${WORK_SPACE}/result.xml
-sudo sed -i '1s/^/<?xml version="1.0" encoding="UTF-8"?> \n/' ${WORK_SPACE}/result.xml
+echo ***SN: Generate XML
+sudo ./generateReport.sh $WORK_SPACE
 
-if [ "$DELETECLUSTER" = "yes" ]; then
+if [ "$DELETECLUSTER" = "true" ]; then
+echo ***SN: DELETE CLUSTER
 sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/deleteClusterAdlRoot.sh"
 # clear the container and config
 sudo docker stop $CONTAINER_ID

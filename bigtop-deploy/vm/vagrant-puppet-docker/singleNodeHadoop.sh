@@ -15,35 +15,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 set -x 
+
 usage() {
     echo "usage: $PROG [-C file ] args"
-    echo "       -C file                                   			         Use alternate file for vagrantconfig.yaml"
+    echo "       -C file                                   		       Use alternate file for vagrantconfig.yaml"
     echo "  commands:"
-    echo "       --create hostname ADLConfigXmlFile SDKJarParentDir DriverJarParentDir   Create a BT Docker(SDK & Driver Jar dirs are optional arg)"
+    echo "       --create hostname ADLConfigXmlFile TestComponent ADLJarPath	Create a BT Docker"
     echo "       --help"
     exit 1
 }
 
 create() {
+    exec 3>create.lock
+    flock -x 3
 #    echo "\$num_instances = 1" > config.rb
     host_name="$1"
     AdlConfigLocalFileWithPath=$2
-    SDK_JAR_PATH=$3
+    SDK_JAR_PATH=$4
     DRIVER_JAR_PATH=$4
+    DEFAULT_COMPONENTS="hadoop, yarn, mapred-app"
+    COMPONENTS="[$DEFAULT_COMPONENTS, $3]"
     echo "SN: Start creation of docker - $host_name using $AdlConfigLocalFileWithPath"
     vagrantfilewithhost="vagrantconfig$host_name.yaml"
     cp $vagrantyamlconf $vagrantfilewithhost
+    echo "components: $COMPONENTS" >>  $vagrantfilewithhost
     echo "name: \"$host_name\"" >> $vagrantfilewithhost
     echo "\$vagrantyamlconf = \"$vagrantfilewithhost\"" > config.rb
     echo "SN: vagrant up start "
-    vagrant up 
+    sudo vagrant up 
     echo "SN: vagrant up end"
     if [ $? -ne 0 ]; then
         echo "Docker container(s) startup failed!";
 	exit 1;
     fi
     
-    nodes=(`vagrant status |grep $host_name |awk '{print $1}'`)
+    nodes=(`sudo vagrant status |grep $host_name |awk '{print $1}'`)
     echo "SN: Node - $nodes is up"
     hadoop_head_node=(`echo "hostname -f" |vagrant ssh ${nodes[0]} |tail -n 1`)
     echo "SN: Headnode is $hadoop_head_node"
@@ -52,27 +58,16 @@ create() {
     jdk=$(get-yaml-config jdk)
     distro=$(get-yaml-config distro)
     enable_local_repo=$(get-yaml-config enable_local_repo)
- 
 
     # UPDATE ADL CONFIG
     CONTAINER_ID=$(docker ps -a | grep $host_name | awk '{print $1}')
-    AdlConfigfileName="${AdlConfigLocalFileWithPath##*/}"
-    TMPDIR="tmp.$host_name"
-    sudo mkdir $TMPDIR
-    sudo chmod 777 $TMPDIR
-    sudo cp ../../puppet/modules/hadoop/templates/base-core-site.xml $TMPDIR/orig-core-site.xml
-    sudo sed "s/DOCKER_HOST/$host_name/g" $AdlConfigLocalFileWithPath > $TMPDIR/$AdlConfigfileName
-    ConfigUpdate/reCreateCoreSite.sh $TMPDIR/orig-core-site.xml $TMPDIR/$AdlConfigfileName $TMPDIR/core-site.xml $host_name
-    ConfigUpdate/copyCoreSiteToDocker.sh true $CONTAINER_ID $TMPDIR/core-site.xml 
-    sudo rm -rf $TMPDIR
 
-    # setup environment before running bigtop puppet deployment
     for node in ${nodes[*]}; do
         (
         echo "SN: $node calling setenv"
-        echo "/bigtop-home/bigtop-deploy/vm/utils/setup-env-$distro.sh $enable_local_repo" |vagrant ssh $node
+        sudo docker exec -i $CONTAINER_ID bash -lc "/bigtop-home/bigtop-deploy/vm/utils/setup-env-$distro.sh $enable_local_repo"
         echo "SN: $node: Triggering provision"
-        echo "/vagrant/provision.sh $hadoop_head_node $repo \"$components\" $jdk" |vagrant ssh $node
+        sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/provision.sh $hadoop_head_node $repo \"$components\" $jdk"
         ) &
     done
     wait
@@ -84,6 +79,18 @@ create() {
     done
     wait
   
+     echo ***SN: update config
+    AdlConfigfileName="${AdlConfigLocalFileWithPath##*/}"
+    TMPDIR="tmp.$host_name"
+    sudo mkdir $TMPDIR
+    sudo chmod 777 $TMPDIR
+    sudo cp ../../puppet/modules/hadoop/templates/base-core-site.xml $TMPDIR/orig-core-site.xml
+    cp $AdlConfigLocalFileWithPath $TMPDIR/$AdlConfigfileName
+    ConfigUpdate/reCreateCoreSite.sh $TMPDIR/orig-core-site.xml $TMPDIR/$AdlConfigfileName $TMPDIR/core-site.xml $host_name
+    ConfigUpdate/copyCoreSiteToDocker.sh $CONTAINER_ID $TMPDIR/core-site.xml
+    sudo rm -rf $TMPDIR
+    ConfigUpdate/updateHdfsSiteAtDocker.sh $CONTAINER_ID $host_name
+
     echo "SN: Removing older client jars. Causing problem with nodemanager crashing"
     sudo docker exec -i $CONTAINER_ID bash -lc "sudo rm -f /usr/lib/hadoop-mapreduce/*azure*"
 
@@ -101,12 +108,16 @@ create() {
         sudo docker exec -i $CONTAINER_ID bash -lc "ls /usr/lib/hadoop/lib/ | grep azure"
 	sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/createClusterAdlRoot.sh"
 	sudo docker exec -i $CONTAINER_ID bash -lc "hdfs dfs -ls /"
+	sudo docker exec -i $CONTAINER_ID bash -lc "jps"
         sudo docker exec -i $CONTAINER_ID bash -lc "sudo /vagrant/restart-bigtop.sh"
     fi
+    exec 3>&-
 }
 
 bigtop-puppet() {
-    echo "puppet apply -d  --parser future --modulepath=/bigtop-home/bigtop-deploy/puppet/modules:/etc/puppet/modules /bigtop-home/bigtop-deploy/puppet/manifests" |vagrant ssh $1
+        echo ***SN:bigtop-puppet
+        sudo docker exec -i $CONTAINER_ID bash -lc "puppet apply -d  --parser future --modulepath=/bigtop-home/bigtop-deploy/puppet/modules:/etc/puppet/modules /bigtop-home/bigtop-deploy/puppet/manifests"
+#    echo "puppet apply -d  --parser future --modulepath=/bigtop-home/bigtop-deploy/puppet/modules:/etc/puppet/modules /bigtop-home/bigtop-deploy/puppet/manifests" |vagrant ssh $1
 }
 
 get-yaml-config() {
@@ -139,9 +150,9 @@ while [ $# -gt 0 ]; do
          create $2 $3
 	fi
  
-        if [ $# -gt 4 ]; then
-	  create $2 $3 $4 $5
-          shift 2;
+        if [ $# -gt 3 ]; then
+	  create $2 $3 $4 $5 
+          shift 3;
 	fi
  
         shift 3;;
