@@ -21,26 +21,29 @@ usage() {
     echo "       -C file                                   		       Use alternate file for vagrantconfig.yaml"
     echo "  commands:"
     echo "       --create hostname ADLConfigXmlFile TestComponent ADLJarPath	Create a BT Docker"
-    echo "       --help"
     exit 1
 }
 
 create() {
     exec 3>create.lock
     flock -x 3
-#    echo "\$num_instances = 1" > config.rb
+
     host_name="$1"
     AdlConfigLocalFileWithPath=$2
     SDK_JAR_PATH=$4
     DRIVER_JAR_PATH=$4
     DEFAULT_COMPONENTS="hadoop, yarn, mapred-app"
     COMPONENTS="[$DEFAULT_COMPONENTS, $3]"
+
     echo "SN: Start creation of docker - $host_name using $AdlConfigLocalFileWithPath"
+    ## VAGRANT CONFIG FILE UPDATE
     vagrantfilewithhost="vagrantconfig$host_name.yaml"
     cp $vagrantyamlconf $vagrantfilewithhost
     echo "components: $COMPONENTS" >>  $vagrantfilewithhost
     echo "name: \"$host_name\"" >> $vagrantfilewithhost
     echo "\$vagrantyamlconf = \"$vagrantfilewithhost\"" > config.rb
+    vagrantyamlconf=$vagrantfilewithhost
+
     echo "SN: vagrant up start "
     sudo vagrant up 
     echo "SN: vagrant up end"
@@ -48,6 +51,12 @@ create() {
         echo "Docker container(s) startup failed!";
 	exit 1;
     fi
+
+    TMPDIR="tmp.$host_name"
+    sudo mkdir $TMPDIR
+    sudo chmod 777 $TMPDIR
+    ## BACKUP CORE CONFIG To RESTORE AT END
+    sudo cp ../../puppet/modules/hadoop/templates/core-site.xml $TMPDIR/git_copy_core-site.xml
     
     nodes=(`sudo vagrant status |grep $host_name |awk '{print $1}'`)
     echo "SN: Node - $nodes is up"
@@ -59,7 +68,6 @@ create() {
     distro=$(get-yaml-config distro)
     enable_local_repo=$(get-yaml-config enable_local_repo)
 
-    # UPDATE ADL CONFIG
     CONTAINER_ID=$(docker ps -a | grep $host_name | awk '{print $1}')
 
     for node in ${nodes[*]}; do
@@ -78,18 +86,16 @@ create() {
         bigtop-puppet ${nodes[$i]} &
     done
     wait
-  
+    
      echo ***SN: update config
     AdlConfigfileName="${AdlConfigLocalFileWithPath##*/}"
-    TMPDIR="tmp.$host_name"
-    sudo mkdir $TMPDIR
-    sudo chmod 777 $TMPDIR
     sudo cp ../../puppet/modules/hadoop/templates/base-core-site.xml $TMPDIR/orig-core-site.xml
     cp $AdlConfigLocalFileWithPath $TMPDIR/$AdlConfigfileName
     ConfigUpdate/reCreateCoreSite.sh $TMPDIR/orig-core-site.xml $TMPDIR/$AdlConfigfileName $TMPDIR/core-site.xml $host_name
     ConfigUpdate/copyCoreSiteToDocker.sh $CONTAINER_ID $TMPDIR/core-site.xml
-    sudo rm -rf $TMPDIR
+    sudo cp $TMPDIR/git_copy_core-site.xml ../../puppet/modules/hadoop/templates/core-site.xml
     ConfigUpdate/updateHdfsSiteAtDocker.sh $CONTAINER_ID $host_name
+    sudo rm -rf $TMPDIR
 
     echo "SN: Removing older client jars. Causing problem with nodemanager crashing"
     sudo docker exec -i $CONTAINER_ID bash -lc "sudo rm -f /usr/lib/hadoop-mapreduce/*azure*"
@@ -106,11 +112,14 @@ create() {
 
         sudo ./copyJars.sh $CONTAINER_ID $SDK_JAR_PATH $DRIVER_JAR_PATH
         sudo docker exec -i $CONTAINER_ID bash -lc "ls /usr/lib/hadoop/lib/ | grep azure"
-	sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/createClusterAdlRoot.sh"
-	sudo docker exec -i $CONTAINER_ID bash -lc "hdfs dfs -ls /"
-	sudo docker exec -i $CONTAINER_ID bash -lc "jps"
-        sudo docker exec -i $CONTAINER_ID bash -lc "sudo /vagrant/restart-bigtop.sh"
+#        ConfigUpdate/updateHdfsSiteAtDocker.sh $CONTAINER_ID $host_name
     fi
+
+    sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/createClusterAdlRoot.sh"
+    sudo docker exec -i $CONTAINER_ID bash -lc "hdfs dfs -ls /"
+    sudo docker exec -i $CONTAINER_ID bash -lc "jps"
+    sudo docker exec -i $CONTAINER_ID bash -lc "sudo /vagrant/restart-bigtop.sh"
+
     exec 3>&-
 }
 
@@ -152,7 +161,7 @@ while [ $# -gt 0 ]; do
  
         if [ $# -gt 3 ]; then
 	  create $2 $3 $4 $5 
-          shift 3;
+          shift 2;
 	fi
  
         shift 3;;

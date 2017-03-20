@@ -14,7 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+set -x
 echo "SN: in setenv"
 enable_local_repo=${1:-false}
 
@@ -26,6 +26,7 @@ echo "SN: installing rng-tools"
 # The poor entropy performance will cause kerberos provisioning failed.
 yum -y install rng-tools
 sed -i.bak 's/EXTRAOPTIONS=\"\"/EXTRAOPTIONS=\"-r \/dev\/urandom\"/' /etc/sysconfig/rngd
+sed -i.bak 's/EXTRAOPTIONS=\"\"/EXTRAOPTIONS=\"-r \/dev\/urandom\"/' /usr/sbin/rngd
 service rngd start
 
 if [ $enable_local_repo == "true" ]; then

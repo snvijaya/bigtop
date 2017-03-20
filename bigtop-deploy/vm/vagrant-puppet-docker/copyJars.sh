@@ -9,8 +9,8 @@ CONTAINER_ID=${1-"80133d746b6d"}
 SDK_JAR_PATH=${2-"/var/lib/jenkins/workspace/adlmr/SDK/target/"}
 DRIVER_JAR_PATH=${3-"/var/lib/jenkins/workspace/adlmr/Driver/target/"}
 
-SDK_JAR_FILE_PATTERN="$SDK_JAR_PATH*azure-data-lake-store*.jar"
-DRIVER_JAR_FILE_PATTERN="$DRIVER_JAR_PATH*hadoop-azure-datalake*.jar"
+SDK_JAR_FILE_PATTERN="$SDK_JAR_PATH/*azure-data-lake-store*.jar"
+DRIVER_JAR_FILE_PATTERN="$DRIVER_JAR_PATH/*hadoop-azure-datalake*.jar"
 
 copyJar() {
     filePattern=$1
