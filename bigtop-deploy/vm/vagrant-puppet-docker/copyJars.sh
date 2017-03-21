@@ -36,7 +36,7 @@ unzip ~/com.fasterxml.jackson.core.jar.zip
 chmod 777 com.fasterxml.jackson.core.jar
 rm -f ~/com.fasterxml.jackson.core.jar.zip
 fi
-docker cp com.fasterxml.jackson.core.jar $CONTAINER_ID:/usr/lib/hadoop/lib/
+#docker cp com.fasterxml.jackson.core.jar $CONTAINER_ID:/usr/lib/hadoop/lib/
 
 
 filePattern=$SDK_JAR_FILE_PATTERN

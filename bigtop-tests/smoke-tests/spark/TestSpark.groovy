@@ -38,11 +38,19 @@ class TestSpark {
   static final String SPARK_HOME = System.getenv("SPARK_HOME")
   static final String SPARK_SHELL = SPARK_HOME + "/bin/spark-shell --master yarn-client"
   static final String TEST_SPARKSQL_LOG = "/tmp/TestSpark_testSparkSQL.log"
+  static final String EXAMPLES_PATH = "/bigtop-home/bigtop-tests/test-artifacts/spark/examples"
 
   @BeforeClass
   static void setUp() {
     sh.exec("rm -f " + TEST_SPARKSQL_LOG)
-    sh.exec("hdfs dfs -put " + SPARK_HOME + "/examples examples")
+    println SPARK_HOME
+//    sh.exec("hdfs dfs -put " + SPARK_HOME + "/examples /user/root/examples")
+    sh.exec("hdfs dfs -put " + EXAMPLES_PATH + " /user/root/examples");
+    println sh.out
+    println sh.err
+    sh.exec("hdfs dfs -mkdir -p /var/log/spark/apps");
+    println sh.out
+    println sh.err
     logError(sh)
   }
 
