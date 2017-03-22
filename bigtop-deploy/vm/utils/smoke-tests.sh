@@ -37,6 +37,7 @@ export FLUME_HOME=/usr/lib/flume/
 export SQOOP_HOME=/usr/lib/sqoop/
 export HIVE_CONF_DIR=/etc/hive/conf/
 export MAHOUT_HOME="/usr/lib/mahout"
+export SPARK_HOME="/usr/lib/spark"
 export PHOENIX_HOME="/usr/lib/phoenix"
 export GRADLE_USER_HOME="/root/.gradle"
 export GRADLE_HOME="/root/.gradle"
