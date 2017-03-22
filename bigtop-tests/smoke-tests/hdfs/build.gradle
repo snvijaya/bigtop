@@ -25,9 +25,10 @@ def tests_to_include() {
 // 	"TestHDFSBalancer.groovy",
 // 	"TestDFSCLI.java",
 
-	"TestDistCpIntra.groovy",
-	"TestFileAppend.groovy",
-	"TestTextSnappy.groovy",
+//	"TestDistCpIntra.groovy",
+//	"TestFileAppend.groovy",
+//	"TestTextSnappy.groovy",
+        "TestWriteRead.groovy",
   ];
 }
 
