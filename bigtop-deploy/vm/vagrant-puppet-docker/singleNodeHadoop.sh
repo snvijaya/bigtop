@@ -97,6 +97,8 @@ create() {
     ConfigUpdate/updateHdfsSiteAtDocker.sh $CONTAINER_ID $host_name
     sudo rm -rf $TMPDIR
 
+    exec 3>&-
+
     echo "SN: Removing older client jars. Causing problem with nodemanager crashing"
     sudo docker exec -i $CONTAINER_ID bash -lc "sudo rm -f /usr/lib/hadoop-mapreduce/*azure*"
 
@@ -110,17 +112,18 @@ create() {
          DRIVER_JAR_PATH="$PWD/"
         fi
 
-        sudo ./copyJars.sh $CONTAINER_ID $SDK_JAR_PATH $DRIVER_JAR_PATH
+        sudo ./copyJars.sh $CONTAINER_ID $SDK_JAR_PATH $DRIVER_JAR_PATH $COMPONENTS
         sudo docker exec -i $CONTAINER_ID bash -lc "ls /usr/lib/hadoop/lib/ | grep azure"
-#        ConfigUpdate/updateHdfsSiteAtDocker.sh $CONTAINER_ID $host_name
     fi
 
+    sudo docker exec -i $CONTAINER_ID bash -lc "cp -r /bigtop-home /bigtop"
+    sudo docker exec -i $CONTAINER_ID bash -lc "cat /vagrant/adlHelperScripts/dockerAlias.sh >> ~/.bashrc"
+    sudo docker exec -i $CONTAINER_ID bash -lc "source ~/.bashrc"
     sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/createClusterAdlRoot.sh"
     sudo docker exec -i $CONTAINER_ID bash -lc "hdfs dfs -ls /"
     sudo docker exec -i $CONTAINER_ID bash -lc "jps"
     sudo docker exec -i $CONTAINER_ID bash -lc "sudo /vagrant/restart-bigtop.sh"
 
-    exec 3>&-
 }
 
 bigtop-puppet() {
