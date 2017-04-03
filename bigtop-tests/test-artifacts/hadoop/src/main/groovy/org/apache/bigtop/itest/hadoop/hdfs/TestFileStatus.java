@@ -56,7 +56,6 @@ public class TestFileStatus {
   static final int fileSize = 16384;
 
   private static Configuration conf;
-//  private static MiniDFSCluster cluster;
   private static FileSystem fs;
   private static FileContext fc;
   private static DFSClient dfsClient;
@@ -66,10 +65,8 @@ public class TestFileStatus {
   public static void testSetUp() throws Exception {
     conf = new Configuration();
     conf.setInt(DFSConfigKeys.DFS_LIST_LIMIT, 2);
-////////    cluster = new MiniDFSCluster.Builder(conf).build();
     fs = FileSystem.get(conf);
     fc = FileContext.getFileContext();
-//    dfsClient = new DFSClient(DFSUtilClient.getNNAddress(conf), conf);
     file1 = new Path("filestatus.dat");
     DFSTestUtil.createFile(fs, file1, fileSize, fileSize, blockSize, (short) 1,
         seed);
@@ -80,9 +77,6 @@ public class TestFileStatus {
     if (fs != null) {
       fs.close();
     }
-//    if (cluster != null) {
-//      cluster.shutdown();
-//    }
   }
   
   private void checkFile(FileSystem fileSys, Path name, int repl)
@@ -98,8 +92,8 @@ public class TestFileStatus {
     assertTrue("/ should be a directory", 
                fs.getFileStatus(path).isDirectory());
     
-    // Make sure getFileInfo returns null for files which do not exist
- //   HdfsFileStatus fileInfo = dfsClient.getFileInfo("/noSuchFile");
+   // Make sure getFileInfo returns null for files which do not exist
+   //   HdfsFileStatus fileInfo = dfsClient.getFileInfo("/noSuchFile");
 
     FileStatus fileInfo = null; 
     try {
@@ -110,24 +104,26 @@ public class TestFileStatus {
     
     Path path1 = new Path("/name1");
     Path path2 = new Path("/name1/name2");
+    fs.delete(path1, true);
     assertTrue(fs.mkdirs(path1));
     FSDataOutputStream out = fs.create(path2, false);
     out.close();
-//    fileInfo = dfsClient.getFileInfo(path1.toString());
     fileInfo = fs.getFileStatus(path1);
-//    assertEquals(1, fileInfo.getChildrenNum());
-//    fileInfo = dfsClient.getFileInfo(path2.toString());
-      fileInfo = fs.getFileStatus(path2);
-//    assertEquals(0, fileInfo.getChildrenNum());
+    //assertEquals(1, fileInfo.getChildrenNum());
+    fileInfo = fs.getFileStatus(path2);
+    //assertEquals(0, fileInfo.getChildrenNum());
 
     // Test getFileInfo throws the right exception given a non-absolute path.
+/*  // FOR ADL PATH ALWAYS GETS CONVERTED TO A VALID PATH    
     try {
-      dfsClient.getFileInfo("non-absolute");
+      //dfsClient.getFileInfo("non-absolute");
+      fs.getFileStatus(new Path("non-absolute"));
       fail("getFileInfo for a non-absolute path did not throw IOException");
     } catch (RemoteException re) {
       assertTrue("Wrong exception for invalid file name: "+re,
           re.toString().contains("Absolute path required"));
     }
+*/
   }
 
 
@@ -138,7 +134,7 @@ public class TestFileStatus {
     // test getFileStatus on a file
     FileStatus status = fs.getFileStatus(file1);
     assertFalse(file1 + " should be a file", status.isDirectory());
-    assertEquals(blockSize, status.getBlockSize());
+    //assertEquals(blockSize, status.getBlockSize());
     assertEquals(1, status.getReplication());
     assertEquals(fileSize, status.getLen());
     assertEquals(file1.makeQualified(fs.getUri(), 
@@ -153,7 +149,7 @@ public class TestFileStatus {
     assertEquals(1, stats.length);
     FileStatus status = stats[0];
     assertFalse(file1 + " should be a file", status.isDirectory());
-    assertEquals(blockSize, status.getBlockSize());
+    //assertEquals(blockSize, status.getBlockSize());
     assertEquals(1, status.getReplication());
     assertEquals(fileSize, status.getLen());
     assertEquals(file1.makeQualified(fs.getUri(), 
@@ -170,25 +166,28 @@ public class TestFileStatus {
   @Test
   public void testGetFileStatusOnNonExistantFileDir() throws IOException {
     Path dir = new Path("/test/mkdirs");
+    fs.delete(new Path("/test"), true);
+    fs.mkdirs(new Path("/test"));
     try {
       fs.listStatus(dir);
       fail("listStatus of non-existent path should fail");
     } catch (FileNotFoundException fe) {
-      assertEquals("File " + dir + " does not exist.",fe.getMessage());
+      assertTrue(fe.getMessage().contains("Folder does not exist"));
     }
     
     try {
       fc.listStatus(dir);
       fail("listStatus of non-existent path should fail");
     } catch (FileNotFoundException fe) {
-      assertEquals("File " + dir + " does not exist.", fe.getMessage());
+      assertTrue(fe.getMessage().contains("Folder does not exist"));
     }
+
     try {
       fs.getFileStatus(dir);
       fail("getFileStatus of non-existent path should fail");
     } catch (FileNotFoundException fe) {
       assertTrue("Exception doesn't indicate non-existant path", 
-          fe.getMessage().startsWith("File does not exist"));
+          fe.getMessage().contains("does not exist"));
     }
   }
 
@@ -197,7 +196,7 @@ public class TestFileStatus {
   public void testGetFileStatusOnDir() throws Exception {
     // Create the directory
     Path dir = new Path("/test/mkdirs");
-    fs.delete(dir, true);
+    fs.delete(new Path("/test"), true);
     assertTrue("mkdir failed", fs.mkdirs(dir));
     assertTrue("mkdir failed", fs.exists(dir));
     
@@ -229,7 +228,7 @@ public class TestFileStatus {
     
     // verify file attributes
     status = fs.getFileStatus(file2);
-    assertEquals(blockSize, status.getBlockSize());
+    //assertEquals(blockSize, status.getBlockSize());
     assertEquals(1, status.getReplication());
     file2 = fs.makeQualified(file2);
     assertEquals(file2.toString(), status.getPath().toString());

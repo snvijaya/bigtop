@@ -50,7 +50,8 @@ public class TestClose {
         // Should fail.
         out.write(data);
         fail("Should not have been able to write more data after file is closed.");
-      } catch (ClosedChannelException cce) {
+//      } catch (ClosedChannelException cce) {
+      } catch (IOException cce) {
         // We got the correct exception. Ignoring.
       }
       // Should succeed. Double closes are OK.

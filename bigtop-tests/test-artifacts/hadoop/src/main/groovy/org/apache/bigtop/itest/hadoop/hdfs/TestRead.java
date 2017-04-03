@@ -71,28 +71,20 @@ public class TestRead {
         new ShortCircuitTestContext("testEOFWithBlockReaderLocal");
     try {
       final Configuration conf = testContext.newConfiguration();
-//      conf.setLong(HdfsClientConfigKeys.DFS_CLIENT_CACHE_READAHEAD, BLOCK_SIZE);
-//////////      MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
-//          .format(true).build();
       testEOF(1);
       testEOF(14);
       testEOF(10000);
-//      cluster.shutdown();
     } finally {
       testContext.close();
     }
   }
 
-//  @Test(timeout=60000)
+  @Test(timeout=60000)
   public void testEOFWithRemoteBlockReader() throws Exception {
     final Configuration conf = new Configuration();
-//    conf.setLong(HdfsClientConfigKeys.DFS_CLIENT_CACHE_READAHEAD, BLOCK_SIZE);
-//////////    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1)
-//        .format(true).build();
     testEOF(1);
     testEOF(14);
     testEOF(10000);   
-//    cluster.shutdown();
   }
 
   /**
@@ -103,8 +95,6 @@ public class TestRead {
   @Test(timeout=60000)
   public void testReadReservedPath() throws Exception {
     Configuration conf = new Configuration();
-////////    MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).
-//        numDataNodes(1).format(true).build();
     try {
       FileSystem fs = FileSystem.get(conf);
       fs.open(new Path("/.reserved/.inodes/file"));
@@ -112,11 +102,11 @@ public class TestRead {
     } catch (FileNotFoundException e) {
       // Expected
     } finally {
-//      cluster.shutdown();
     }
   }
 
-  @Test(timeout=60000)
+
+//  @Test(timeout=60000)
   public void testInterruptReader() throws Exception {
     final Configuration conf = new Configuration();
 //    conf.set(DFSConfigKeys.DFS_DATANODE_FSDATASET_FACTORY_KEY,
@@ -131,7 +121,7 @@ public class TestRead {
       DFSTestUtil.createFile(fs, file, 1024, (short) 1, 0L);
 
       final FSDataInputStream in = fs.open(file);
-      AtomicBoolean readInterrupted = new AtomicBoolean(false);
+      final AtomicBoolean readInterrupted = new AtomicBoolean(false);
       final Thread reader = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -140,7 +130,7 @@ public class TestRead {
           } catch (IOException e) {
             if (e instanceof ClosedByInterruptException ||
                 e instanceof InterruptedIOException) {
-              // readInterrupted.set(true);
+               readInterrupted.set(true);
             }
           }
         }
@@ -150,7 +140,6 @@ public class TestRead {
       Thread.sleep(1000);
       reader.interrupt();
       reader.join();
-
       Assert.assertTrue(readInterrupted.get());
     } finally {
 //      cluster.shutdown();

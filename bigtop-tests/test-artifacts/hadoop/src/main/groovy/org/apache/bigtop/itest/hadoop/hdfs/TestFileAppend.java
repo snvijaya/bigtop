@@ -473,8 +473,15 @@ FileSystem fs = FileSystem.get(conf);
 
     //Wait for > soft-limit
 //    Thread.sleep(250);
-    System.out.println("****SN: sleep for 365000");
-    Thread.sleep(365000000);
+        int sleepMinutes = 11;
+        for (int i = 0; i < sleepMinutes; i++)
+        {
+                System.out.println("Sleep minute: " + i);
+                Thread.sleep(60 * 1000);
+        }
+
+//    System.out.println("****SN: sleep for 365000");
+//    Thread.sleep(365000000);
 
     try {
       FSDataOutputStream appendStream2 = fs2.append(testPath);
@@ -517,8 +524,15 @@ FileSystem fs = FileSystem.get(conf);
 
     //Wait for > soft-limit
 //    Thread.sleep(250);
-    System.out.println("****SN: sleep for 365000");
-    Thread.sleep(365000000);
+        int sleepMinutes = 11;
+        for (int i = 0; i < sleepMinutes; i++)
+        {
+                System.out.println("Sleep minute: " + i);
+                Thread.sleep(60 * 1000);
+        }
+
+//    System.out.println("****SN: sleep for 365000");
+//    Thread.sleep(365000000);
 
     try {
 //      FSDataOutputStream appendStream2 = fs2.append(testPath,

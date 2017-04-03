@@ -31,7 +31,7 @@ def tests_to_include() {
 // multiuser            "TestDFSPermission.java",
 // mocked               "TestLease.java",
 
-/**        "TestDistCpIntra.groovy",
+        "TestDistCpIntra.groovy",
         "TestFileAppend.groovy",
         "TestFileAppend.java",
         "TestFileAppend2.java",
@@ -40,13 +40,11 @@ def tests_to_include() {
         "TestWriteRead.java",
         "TestClose.java",
         "TestDFSMkdirs.java",
-        "TestDFSShell.java",
+	"TestDFSShell.java",
         "TestFileAppend3.java",
         "TestFileStatus.java",
-        "TestFsShellPermission.java",
         "TestModTime.java",
         "TestRead.java",
-**/
         "TestReadWhileWriting.java",
   ];
 }

@@ -49,24 +49,18 @@ public class TestReadWhileWriting {
   private static final int BLOCK_SIZE = 8192;
   // soft limit is short and hard limit is long, to test that
   // another thread can lease file after soft limit expired
-  private static final long SOFT_LEASE_LIMIT = 500;
+  // ADL: 10 min + 1 min (buffer)
+  private static final long SOFT_LEASE_LIMIT = 660;
   private static final long HARD_LEASE_LIMIT = 1000*600; 
   
   /** Test reading while writing. */
   @Test
   public void pipeline_02_03() throws Exception {
+   System.out.println("ADL: Start of pipeline_02_03");
     final Configuration conf = new Configuration();
     conf.setLong(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1);
 
-    // create cluster
-////////    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
-////        .numDataNodes(4).build();
     try {
-      //change the lease limits.
-//      cluster.setLeasePeriod(SOFT_LEASE_LIMIT, HARD_LEASE_LIMIT);
-
-      //wait for the cluster
-//      cluster.waitActive();
       final FileSystem fs = FileSystem.get(conf);
       final Path p = new Path(DIR, "file1");
       final int half = BLOCK_SIZE/2;
@@ -75,18 +69,19 @@ public class TestReadWhileWriting {
       //   Invoke DFSOutputStream.hflush() on the dfs file handle.
       //   Do not close file yet.
       {
+ 	System.out.println("ADL: Writing half a block");
         final FSDataOutputStream out = fs.create(p, true,
             fs.getConf().getInt(CommonConfigurationKeys.IO_FILE_BUFFER_SIZE_KEY, 4096),
             (short)3, BLOCK_SIZE);
         write(out, 0, half);
 
-//        //hflush
-//        ((DFSOutputStream)out.getWrappedStream()).hflush();
+           out.hflush();
            out.flush();
       }
 
       //b. On another machine M2, open file and verify that the half-block
       //   of data can be read successfully.
+      System.out.println("ADL: CheckFile");
       checkFile(p, half, conf);
       AppendTestUtil.LOG.info("leasechecker.interruptAndJoin()");
 //      ((FileSystem)fs).dfs.getLeaseRenewer().interruptAndJoin();
@@ -94,7 +89,12 @@ public class TestReadWhileWriting {
       //c. On M1, append another half block of data.  Close file on M1.
       {
         //sleep to let the lease is expired.
-        Thread.sleep(2*SOFT_LEASE_LIMIT);
+        int sleepMinutes = (int)(SOFT_LEASE_LIMIT/60);
+	for (int i = 0; i < sleepMinutes; i++)
+	{
+       		System.out.println("Sleep minute: " + i);         
+		Thread.sleep(60 * 1000);
+	}
   
         final UserGroupInformation current = UserGroupInformation.getCurrentUser();
         final UserGroupInformation ugi = UserGroupInformation.createUserForTesting(
@@ -114,7 +114,6 @@ public class TestReadWhileWriting {
       //d. On M2, open file and read 1 block of data from it. Close file.
       checkFile(p, 2*half, conf);
     } finally {
-//      cluster.shutdown();
     }
   }
 
@@ -146,13 +145,9 @@ public class TestReadWhileWriting {
     UserGroupInformation ugi = UserGroupInformation.createUserForTesting(username, 
                                  new String[] {"supergroup"});
     
-    final FileSystem fs = DFSTestUtil.getFileSystemAs(ugi, conf);
+    final FileSystem fs = FileSystem.get(conf);
     
-//    final HdfsDataInputStream in = (HdfsDataInputStream)fs.open(p);
      final FSDataInputStream in = fs.open(p);
-
-    //Check visible length
-//    Assert.assertTrue(in.getVisibleLength() >= expectedsize);
 
     //Able to read?
     for(int i = 0; i < expectedsize; i++) {
