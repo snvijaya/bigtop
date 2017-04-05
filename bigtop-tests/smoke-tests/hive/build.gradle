@@ -26,18 +26,24 @@ def tests_to_include() {
 sourceSets {
   test {
     groovy {
+      resources {
+        srcDirs = [
+            "${BIGTOP_HOME}/bigtop-tests/test-artifacts/hive/src/main/resources",
+        ]
+      }
       srcDirs = ["${BIGTOP_HOME}/bigtop-tests/test-artifacts/hive/",
+                 "${BIGTOP_HOME}/bigtop-tests/smoke-tests/hive/build/classes/test/org/apache/bigtop/itest/hivesmoke/",
                  "${BIGTOP_HOME}/bigtop-tests/smoke-tests/hive/"]
       exclude { FileTreeElement elem -> (doExclude(elem.getName())) }
     }
   }
 }
 
-test {
- //TODO : Resurrect this line after BIGTOP-1392 is done.
- systemProperties["org.apache.bigtop.itest.hivesmoke.TestHiveSmokeBulk.test_include"]="xxx"
+ test {
+ systemProperties["org.apache.bigtop.itest.hivesmoke.TestHiveSmokeBulk.test_include"]="basic"
 }
 
 test.doFirst {
   checkEnv(["HIVE_HOME", "HIVE_CONF_DIR"])
 }
+

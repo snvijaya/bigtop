@@ -1,0 +1,3 @@
+default	authorization_part			hive_test_user	USER	CREATE	false	1491319437000	root
+default	authorization_part			hive_test_user	USER	DROP	false	1491319437000	root
+default	authorization_part			hive_test_user	USER	UPDATE	false	1491319437000	root
