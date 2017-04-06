@@ -1,0 +1,27 @@
+b=1/c=1
+b=1/c=2
+b=2/c=2
+ABSTRACT SYNTAX TREE:
+  
+TOK_ALTERTABLE
+   TOK_TABNAME
+      mp
+   TOK_ALTERTABLE_DROPPARTS
+      TOK_PARTSPEC
+         TOK_PARTVAL
+            b
+            =
+            '1'
+
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Drop Table Operator:
+        Drop Table
+          table: default.mp
+
+b=2/c=2
+b=2/c=2
