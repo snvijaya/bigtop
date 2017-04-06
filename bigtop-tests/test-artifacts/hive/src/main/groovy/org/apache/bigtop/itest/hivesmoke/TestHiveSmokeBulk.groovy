@@ -34,7 +34,7 @@ public class TestHiveSmokeBulk {
   private static String test_exclude =
     System.getProperty("org.apache.bigtop.itest.hivesmoke.TestHiveSmokeBulk.test_exclude");
   static Shell sh = new Shell("/bin/bash -s");
-  static HiveBulkScriptExecutor scripts = new HiveBulkScriptExecutor("/scripts/ql");
+  static HiveBulkScriptExecutor scripts = new HiveBulkScriptExecutor("/scripts/ql","/nativeHiveOutputs");
 
   private String test;
 
@@ -59,6 +59,7 @@ public class TestHiveSmokeBulk {
      hive_script <<= "drop table ${it};\n"; 
     }
     shHive.exec("${hive_script} quit; \n"); 
+
     println("cleanUp end");
   }
 
@@ -114,7 +115,7 @@ public class TestHiveSmokeBulk {
   @Test
   public void testHiveBulk() {
     println("testHiveBulk " + test + " start");
-    scripts.runScript(test);
+    scripts.runScript(test); 
     println("testHiveBulk " + test + " end");
   }
 }

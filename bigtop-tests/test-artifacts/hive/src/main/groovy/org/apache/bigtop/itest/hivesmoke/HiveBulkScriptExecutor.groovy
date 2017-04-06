@@ -26,11 +26,16 @@ public class HiveBulkScriptExecutor {
 
   private File scripts;
   private String location;
+  private String nativeHiveOutputPath;
 
-  public HiveBulkScriptExecutor(String l) {
+  public HiveBulkScriptExecutor(String l, String n) {
     location = HiveBulkScriptExecutor.class.getResource(l).getPath();
     scripts = new File(location);
-    println location
+    //nativeHiveOutputPath = HiveBulkScriptExecutor.class.getResource('seed.hql').getPath();
+    nativeHiveOutputPath = HiveBulkScriptExecutor.class.getResource(n).getPath(); 
+    println "SN: location =" + location
+    println "SN: scripts =" + scripts
+    println "SN: nativeHiveOutputPath =" + nativeHiveOutputPath
 
 /*    if (!scripts.exists()) {
       JarContent.unpackJarContainer(HiveBulkScriptExecutor.class, '.' , null);
@@ -50,27 +55,27 @@ public class HiveBulkScriptExecutor {
 
   public void runScript(String test, String extraArgs) {
     String l = "${location}/${test}";
-    println "runScript 2 args: " + l 
+    String n = "${nativeHiveOutputPath}/${test}";
+    println "runScript 2 args for " + l + " compare with " + n
     def scriptDir = getClass().protectionDomain.codeSource.location.path
     def runDir = System.getProperty("user.dir");
     
     sh.exec("""
     set -x
-    F=cat
-    if [ -f ${l}/filter ]; then
-      chmod 777 ${l}/filter
-      F=${l}/filter
-    fi
     pwd
     cd ${l}
     cd ../../../
     pwd
-    hive ${extraArgs} -e -f ${l}/in > ${l}/actual && diff -u <(\$F < ${l}/actual) <(\$F < ${l}/out)
+    hive ${extraArgs} -f ${l}/in > ${l}/actual  
+    cat ${l}/actual
+    cat ${n}/actual 
+    sudo diff ${l}/actual ${n}/actual
     """);
     println "***SN: hive script run complete"
     println sh.out
     println "***SN: hive err any ? "
     println sh.err
+    println "***SN: ret code" + sh.ret
     assertEquals("Got unexpected output from test script ${test}",
                   0, sh.ret);
   }

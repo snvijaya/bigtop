@@ -26,6 +26,11 @@ def tests_to_include() {
 sourceSets {
   test {
     groovy {
+      resources {
+        srcDirs = [
+            "${BIGTOP_HOME}/bigtop-tests/test-artifacts/hive/src/main/resources",
+        ]
+      }
       srcDirs = ["${BIGTOP_HOME}/bigtop-tests/test-artifacts/hive/",
                  "${BIGTOP_HOME}/bigtop-tests/smoke-tests/hive/"]
       exclude { FileTreeElement elem -> (doExclude(elem.getName())) }
