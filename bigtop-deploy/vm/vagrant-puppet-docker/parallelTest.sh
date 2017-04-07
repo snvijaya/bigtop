@@ -42,6 +42,7 @@ echo ***SN: WORKSPACE= $WORK_SPACE
 echo ***SN: PWD = $PWD
 echo ***SN: JOB = $JOB_NAME
 echo ***SN: DELETE CLUSTER AT END = $DELETECLUSTER
+echo  ***SN: COMPONENT = $COMPONENT
 
 #cd $WORK_SPACE
 
@@ -68,12 +69,12 @@ echo ***SN: Duplicate bigtop env so that tests can run
 sudo docker exec -i $CONTAINER_ID bash -lc "sudo cp -r /bigtop-home/ /bigtop/"
 sudo docker exec -i $CONTAINER_ID bash -lc "localedef -i en_US -f UTF-8 en_US.UTF-8"
 
-echo ***SN: Enable gradle daemonfor subsequent runs to be faster
+echo ***SN: Enable gradle daemon for subsequent runs to be faster
 sudo docker exec -i $CONTAINER_ID bash -lc "touch ~/.gradle/gradle.properties && echo \"org.gradle.daemon=true\" >> ~/.gradle/gradle.properties"
 
-echo ***SN: COPY ADL JARS
+echo ***SN: COPY ADL JARS $COMPONENT
 ls $WORK_SPACE | grep *.jar
-sudo ./copyJars.sh $CONTAINER_ID "$WORK_SPACE/SDK/target/" "$WORK_SPACE/Driver/target/" 
+sudo ./copyJars.sh $CONTAINER_ID "$WORK_SPACE/SDK/target/" "$WORK_SPACE/Driver/target/" $COMPONENT
 
 echo ***SN: GET THE CLUSTER READY FOR CONTAINER SUPPORT
 sudo docker exec -i $CONTAINER_ID bash -lc "ls /usr/lib/hadoop/lib/ | grep azure"
@@ -92,7 +93,15 @@ echo ***SN: TRIGGER SMOKE TEST
 sudo docker exec -i $CONTAINER_ID bash -lc "/bigtop/bigtop-deploy/vm/utils/smoke-tests.sh $TESTDIR" > $WORK_SPACE/output.txt
 
 echo ***SN: Generate XML
-sudo ./generateReport.sh $WORK_SPACE
+sudo mkdir -p $WORK_SPACE/test-results
+sudo rm -rf $WORK_SPACE/test-results/*
+sudo docker exec -i $CONTAINER_ID bash -lc "ls /bigtop/bigtop-tests/smoke-tests/$TESTDIR/build/test-results/*.xml" > $WORK_SPACE/test-results/result_files_list
+while read -r line || [ -n "$line" ];do
+      sudo docker cp $CONTAINER_ID:$line $WORK_SPACE/test-results/
+done < $WORK_SPACE/test-results/result_files_list
+
+sudo ./generateReport.sh $WORK_SPACE/test-results/ $WORK_SPACE/result.xml
+sudo ./fetchADLExceptions.sh $WORK_SPACE
 
 if [ "$DELETECLUSTER" = "true" ]; then
 echo ***SN: DELETE CLUSTER

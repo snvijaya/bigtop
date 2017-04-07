@@ -10,6 +10,8 @@ SDK_JAR_PATH=${2-"/var/lib/jenkins/workspace/adlmr/SDK/target/"}
 DRIVER_JAR_PATH=${3-"/var/lib/jenkins/workspace/adlmr/Driver/target/"}
 COMPONENTS=$4
 
+echo "CONTAINER_ID = $CONTAINER_ID COMPONENTS = $COMPONENTS"
+
 SDK_JAR_FILE_PATTERN="$SDK_JAR_PATH/*azure-data-lake-store*.jar"
 DRIVER_JAR_FILE_PATTERN="$DRIVER_JAR_PATH/*hadoop-azure-datalake*.jar"
 
@@ -47,4 +49,6 @@ copyJar $filePattern
 filePattern=$DRIVER_JAR_FILE_PATTERN
 copyJar $filePattern
 
-
+sudo docker exec -i $CONTAINER_ID bash -lc "sudo sed -i -e '\$a log4j.logger.org.apache.hadoop=DEBUG' /etc/hadoop/conf/log4j.properties"
+sudo docker exec -i $CONTAINER_ID bash -lc "sudo sed -i -e '\$a log4j.logger.com.microsoft.azure.datalake.store=ALL' /etc/hadoop/conf/log4j.properties"
+sudo docker exec -i $CONTAINER_ID bash -lc "sudo sed -i -e '\$a log4j.logger.org.apache=DEBUG' /etc/hadoop/conf/log4j.properties"

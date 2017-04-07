@@ -35,7 +35,8 @@ create() {
     DEFAULT_COMPONENTS="hadoop, yarn, mapred-app"
     COMPONENTS="[$DEFAULT_COMPONENTS, $3]"
 
-    echo "SN: Start creation of docker - $host_name using $AdlConfigLocalFileWithPath"
+    echo "SN: Start creation of $3 docker - $host_name using $AdlConfigLocalFileWithPath"
+    echo "SN: using jars from : $SDK_JAR_PATH $DRIVER_JAR_PATH"
     ## VAGRANT CONFIG FILE UPDATE
     vagrantfilewithhost="vagrantconfig$host_name.yaml"
     cp $vagrantyamlconf $vagrantfilewithhost
@@ -111,19 +112,25 @@ create() {
          echo "SN: Driver jar path provided is current working directory"
          DRIVER_JAR_PATH="$PWD/"
         fi
-
+        echo "SN: COPY JARS $CONTAINER_ID $COMPONENTS"
         sudo ./copyJars.sh $CONTAINER_ID $SDK_JAR_PATH $DRIVER_JAR_PATH $COMPONENTS
+        echo "SN: JAR COPY VERIFY"
         sudo docker exec -i $CONTAINER_ID bash -lc "ls /usr/lib/hadoop/lib/ | grep azure"
+
+        echo "SN: CREATE CLUSTER ADL ROOT"
+        sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/createClusterAdlRoot.sh"
+        echo "SN: VERIFY CLUSTER ROOT EXISTANCE"
+        sudo docker exec -i $CONTAINER_ID bash -lc "hdfs dfs -ls /"
+        echo "SN: PROCESSES RUNNING"
+        sudo docker exec -i $CONTAINER_ID bash -lc "jps"
+        echo "SN: RESTART SERVICES"
     fi
 
+    echo "SN: CLONE BIGTOP HOME"
     sudo docker exec -i $CONTAINER_ID bash -lc "cp -r /bigtop-home /bigtop"
+    echo "SN: SETTING UP SHORTCUT ALIAS IN DOCKER"
     sudo docker exec -i $CONTAINER_ID bash -lc "cat /vagrant/adlHelperScripts/dockerAlias.sh >> ~/.bashrc"
     sudo docker exec -i $CONTAINER_ID bash -lc "source ~/.bashrc"
-    sudo docker exec -i $CONTAINER_ID bash -lc "/vagrant/createClusterAdlRoot.sh"
-    sudo docker exec -i $CONTAINER_ID bash -lc "hdfs dfs -ls /"
-    sudo docker exec -i $CONTAINER_ID bash -lc "jps"
-    sudo docker exec -i $CONTAINER_ID bash -lc "sudo /vagrant/restart-bigtop.sh"
-
 }
 
 bigtop-puppet() {
