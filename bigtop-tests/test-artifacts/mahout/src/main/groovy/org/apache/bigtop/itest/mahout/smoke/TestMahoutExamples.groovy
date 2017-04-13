@@ -24,6 +24,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.After;
 import org.junit.Test;
+import org.junit.Assume;
+
 
 import org.apache.bigtop.itest.JarContent;
 import org.apache.bigtop.itest.shell.Shell;
@@ -221,6 +223,8 @@ public class TestMahoutExamples {
    */
   @Test(timeout = 12000000L)
   public void factorizeMovieLensRatings() {
+    Map<String, String> env = System.getenv();
+    Assume.assumeTrue(env.containsKey("MAHOUT_BASIC_TEST"));
     // convert ratings
     sh.exec("cat ${TEMP_DIR}/movielens/ml-1m/ratings.dat |sed -e s/::/,/g| cut -d, -f1,2,3 > ${TEMP_DIR}/movielens/ratings.csv");
     assertEquals("Unexpected error from converting ratings", 0, sh.getRet());
@@ -307,11 +311,17 @@ public class TestMahoutExamples {
 
   @Test(timeout = 900000L)
   public void clusterControlDataWithCanopy() {
+    Map<String, String> env = System.getenv();
+    Assume.assumeTrue(env.containsKey("MAHOUT_BASIC_TEST"));
+
     _clusterSyntheticControlData("canopy");
   }
 
   @Test(timeout = 9000000L)
   public void clusterControlDataWithKMeans() {
+    Map<String, String> env = System.getenv();
+    Assume.assumeTrue(env.containsKey("MAHOUT_BASIC_TEST"));
+
     println("**SN: kmeans");
     sh.exec("**SN: kmeans");
     _clusterSyntheticControlData("kmeans");
@@ -319,6 +329,9 @@ public class TestMahoutExamples {
 
   @Test(timeout = 9000000L)
   public void clusterControlDataWithFuzzyKMeans() {
+    Map<String, String> env = System.getenv();
+    Assume.assumeTrue(env.containsKey("MAHOUT_BASIC_TEST"));
+
     _clusterSyntheticControlData("fuzzykmeans");
   }
 
@@ -341,6 +354,9 @@ public class TestMahoutExamples {
    */
    @Test(timeout = 72000000L)
   public void testReutersLDA() {
+    Map<String, String> env = System.getenv();
+    Assume.assumeTrue(env.containsKey("MAHOUT_REUTERS_TEST"));
+
     // where does lda.algorithm come in?
     println "***SN: testReutersLDA - 1"
 
@@ -392,6 +408,9 @@ mahout ldatopics \
    */
   @Test(timeout = 90000000L)
   public void testBayesNewsgroupClassifier() {
+    Map<String, String> env = System.getenv();
+    Assume.assumeTrue(env.containsKey("MAHOUT_BAYES_TEST"));
+
     // put bayes-train-input and bayes-test-input in hdfs
 /*     sh.exec("hadoop fs -rm -r /tmp/mahout.1/20news-seq");
      sh.exec("hadoop fs -rm -r /tmp/mahout.1/20news-train-vectors");

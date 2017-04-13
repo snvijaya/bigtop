@@ -7,8 +7,7 @@ alias scriptDir="cd $BIGTOP_GIT_HOME/bigtop-deploy/puppet/modules/hadoop/templat
 alias dockerDir="cd $dockerPath"
 alias bigtop="cd $BIGTOP_GIT_HOME"
 
-alias jenkins='cd /var/lib/jenkins/workspace'
-
+alias jenkins='cd /adljenkins/workspace'
 
 # DOCKER COMMANDS
 alias rmDockers="cd $adlScriptPath;./clearAllDockers.sh;cd -" 
