@@ -14,7 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#set -x 
+set -x 
 
 usage() {
     echo "usage: $PROG [-C file ] args"
@@ -28,7 +28,7 @@ create() {
     exec 3>create.lock
     flock -x 3
 
-    host_name="$1"
+    host_name=$1
     AdlConfigLocalFileWithPath=$2
     SDK_JAR_PATH=$4
     DRIVER_JAR_PATH=$4
