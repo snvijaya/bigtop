@@ -1,4 +1,4 @@
-BIGTOP_GIT_HOME="/home/hadoop/ADLBigtop"
+BIGTOP_GIT_HOME="/home/hadoop/abt/bigtop"
 
 # DIRECTORY ALIASES
 dockerPath="$BIGTOP_GIT_HOME/bigtop-deploy/vm/vagrant-puppet-docker"

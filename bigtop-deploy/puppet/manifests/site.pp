@@ -66,7 +66,7 @@ package { $jdk_package_name:
   alias => "jdk",
 }
 
-# import "cluster.pp"
+import "cluster.pp"
 
 node default {
 

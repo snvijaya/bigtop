@@ -3,14 +3,13 @@ set -x
 ## ARGUMENT 2: PATH TO SDK JAR
 ## ARGUMENT 3: PATH TO DRIVER JAR
 
-CONTAINER_ID=${1-"80133d746b6d"}
 #SDK_JAR_PATH=${2-"/var/lib/jenkins/workspace/ADLSDK/target/"}
 #DRIVER_JAR_PATH=${3-"/var/lib/jenkins/workspace/ADLDriver/target/"}
-SDK_JAR_PATH=${2-"/var/lib/jenkins/workspace/adlmr/SDK/target/"}
-DRIVER_JAR_PATH=${3-"/var/lib/jenkins/workspace/adlmr/Driver/target/"}
+SDK_JAR_PATH=${1-"/var/lib/jenkins/workspace/adlmr/SDK/target/"}
+DRIVER_JAR_PATH=${2-"/var/lib/jenkins/workspace/adlmr/Driver/target/"}
+TARGET_DIR=${3-"/var/lib/jenkins/workspace/jars/"}
 COMPONENTS=$4
 
-echo "CONTAINER_ID = $CONTAINER_ID COMPONENTS = $COMPONENTS"
 
 SDK_JAR_FILE_PATTERN="$SDK_JAR_PATH/*azure-data-lake-store*.jar"
 DRIVER_JAR_FILE_PATTERN="$DRIVER_JAR_PATH/*hadoop-azure-datalake*.jar"
@@ -27,8 +26,8 @@ copyJar() {
        fi
      done
      if [ "$file_to_copy" = "true" ]; then
-        echo Copying file $f to Container $CONTAINER_ID over path /usr/lib/hadoop/lib/
-        docker cp $f $CONTAINER_ID:/usr/lib/hadoop/lib/
+        echo Copying file $f to $TARGET_DIR
+        yes | cp -f $f $TARGET_DIR/
      fi
 }
 
@@ -40,7 +39,7 @@ chmod 777 com.fasterxml.jackson.core.jar
 rm -f ~/com.fasterxml.jackson.core.jar.zip
 fi
 if [ ${COMPONENTS} != *"spark"* ]; then
-docker cp com.fasterxml.jackson.core.jar $CONTAINER_ID:/usr/lib/hadoop/lib/
+yes | cp -f com.fasterxml.jackson.core.jar $TARGET_DIR/
 fi
 
 
@@ -49,6 +48,3 @@ copyJar $filePattern
 filePattern=$DRIVER_JAR_FILE_PATTERN
 copyJar $filePattern
 
-sudo docker exec -i $CONTAINER_ID bash -lc "sudo sed -i -e '\$a log4j.logger.org.apache.hadoop=DEBUG' /etc/hadoop/conf/log4j.properties"
-sudo docker exec -i $CONTAINER_ID bash -lc "sudo sed -i -e '\$a log4j.logger.com.microsoft.azure.datalake.store=ALL' /etc/hadoop/conf/log4j.properties"
-sudo docker exec -i $CONTAINER_ID bash -lc "sudo sed -i -e '\$a log4j.logger.org.apache=DEBUG' /etc/hadoop/conf/log4j.properties"

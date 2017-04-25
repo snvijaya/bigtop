@@ -1,4 +1,4 @@
-#set -x
+set -x
 mkdir -p $DOCKER_HOST
 cat /etc/hadoop/conf/core-site.xml | grep azuredatalake > tmp.account.config
 config=$(cat /etc/hadoop/conf/core-site.xml | grep azuredatalake)

@@ -27,7 +27,7 @@ echo "SN: installing rng-tools"
 yum -y install rng-tools
 sed -i.bak 's/EXTRAOPTIONS=\"\"/EXTRAOPTIONS=\"-r \/dev\/urandom\"/' /etc/sysconfig/rngd
 sed -i.bak 's/EXTRAOPTIONS=\"\"/EXTRAOPTIONS=\"-r \/dev\/urandom\"/' /usr/sbin/rngd
-service rngd start
+sudo service rngd start
 
 if [ $enable_local_repo == "true" ]; then
     echo "Enabling local yum."

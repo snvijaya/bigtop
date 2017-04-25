@@ -41,6 +41,9 @@ export SPARK_HOME="/usr/lib/spark"
 export PHOENIX_HOME="/usr/lib/phoenix"
 export GRADLE_USER_HOME="/root/.gradle"
 export GRADLE_HOME="/root/.gradle"
+export HBASE_HOME=/usr/lib/hbase
+export HBASE_CONF_DIR=/usr/lib/hbase/conf
+export ZOOKEEPER_HOME=/usr/lib/zookeeper
 echo GRADLE_USER_HOME $GRADLE_USER_HOME GRADLE_HOME $GRADLE_HOME
 unset MAHOUT_LOCAL
 
@@ -57,7 +60,7 @@ ALL_SMOKE_TASKS=""
 for s in `echo $SMOKE_TESTS | sed -e 's#,# #g'`; do
   ALL_SMOKE_TASKS="$ALL_SMOKE_TASKS bigtop-tests:smoke-tests:$s:test"
 done
-cd /bigtop && ./gradlew clean $ALL_SMOKE_TASKS -Psmoke.tests --info
+cd /bigtop-home && ./gradlew clean $ALL_SMOKE_TASKS -Psmoke.tests --info
 # BIGTOP-2244 workaround: clean the top level buildSrc/build with the same
 # permissions as used for smoke-tests execution
 rm -rf buildSrc/build/test-results/binary
