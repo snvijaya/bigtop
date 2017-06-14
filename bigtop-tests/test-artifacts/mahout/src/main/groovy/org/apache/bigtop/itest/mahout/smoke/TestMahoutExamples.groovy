@@ -422,7 +422,7 @@ mahout ldatopics \
  
     println "start testBayesNewsgroupClassifier"
     sh.exec("hadoop fs -mkdir ${WORK_DIR}");
-    println "testBayesNewsgroupClassifier: WORK_DIR =" + ${WORK_DIR} + " created " + sh.out + " err=" + sh.err;
+    println "testBayesNewsgroupClassifier: WORK_DIR created " + sh.out + " err=" + sh.err;
     sh.exec("hadoop fs -mkdir ${WORK_DIR}/20news-vectors");
     println "testBayesNewsgroupClassifier: WORK_DIR}/20news-vectors created " + sh.out + " err= " + sh.err; 
     sh.exec("hadoop fs -put ${TEMP_DIR}/20news-all ${WORK_DIR}/20news-all");
