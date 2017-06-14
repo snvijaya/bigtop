@@ -69,6 +69,16 @@ public class HiveBulkScriptExecutor {
     hive ${extraArgs} -f ${l}/in > ${l}/actual  
     cat ${l}/actual
     cat ${n}/actual 
+    sudo sed -i '/Time/ d' ${l}/actual
+    sudo sed -i '/location/ d' ${l}/actual
+    sudo sed -i '/destination/ d' ${l}/actual
+    sudo sed -i '/adl/ d' ${l}/actual
+    sudo sed -i '/hdfs/ d' ${l}/actual
+    sudo sed -i '/Time/ d' ${n}/actual
+    sudo sed -i '/location/ d' ${n}/actual
+    sudo sed -i '/destination/ d' ${n}/actual
+    sudo sed -i '/adl/ d' ${n}/actual
+    sudo sed -i '/hdfs/ d' ${n}/actual
     sudo diff ${l}/actual ${n}/actual
     """);
     println "***SN: hive script run complete"
