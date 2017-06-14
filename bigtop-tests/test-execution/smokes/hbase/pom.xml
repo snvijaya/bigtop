@@ -47,7 +47,9 @@
  <dependency>
     <groupId>org.apache.hbase</groupId>
     <artifactId>hbase</artifactId>
-    <version>0.98.20-hadoop2</version>
+    <version>0.98.21-hadoop1</version>
+    <scope>system</scope>
+    <systemPath>/bigtop-home/bigtop-tests/test-execution/smokes/hbase/hbase-hadoop1-compat-0.98.21-hadoop1.jar</systemPath>
   </dependency>
     <dependency>
       <groupId>org.apache.bigtop.itest</groupId>

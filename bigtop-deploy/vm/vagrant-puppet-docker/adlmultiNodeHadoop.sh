@@ -37,21 +37,6 @@ create() {
     COMPONENTS="[$DEFAULT_COMPONENTS, $5]"
     echo "Starting cluster as host=$host_name with $AdlConfigLocalFileWithPath using jars in $SDK_JAR_PATH.Components set will be $COMPONENTS"
 
-    echo "\$num_instances = $1" > config.rb
-#    vagrantfilewithhost="vagrantconfig$host_name.yaml"
-#    cp $vagrantyamlconf $vagrantfilewithhost
-#    echo "components: $COMPONENTS" >>  $vagrantfilewithhost
-#    echo "name: \"$host_name\"" >> $vagrantfilewithhost
-    echo "name: \"$host_name\"" >> $vagrantyamlconf
-#    echo "\$vagrantyamlconf = \"$vagrantfilewithhost\"" >> config.rb
-    echo "\$vagrantyamlconf = \"$vagrantyamlconf\"" >> config.rb
-    vagrant up --no-parallel
-    if [ $? -ne 0 ]; then
-        echo "Docker container(s) startup failed!";
-	exit 1;
-    fi
-
-    TMPDIR="tmp.$host_name"
     sudo mkdir -p $TMPDIR
     sudo chmod 777 $TMPDIR
     JARDIR="tmp.jar.$host_name"
@@ -68,22 +53,6 @@ create() {
     distro=$(get-yaml-config distro)
     enable_local_repo=$(get-yaml-config enable_local_repo)
 
-    # setup environment before running bigtop puppet deployment
-    for node in ${nodes[*]}; do
-        (
-        echo "/bigtop-home/bigtop-deploy/vm/utils/setup-env-$distro.sh $enable_local_repo" |vagrant ssh $node
-        echo "/vagrant/provision.sh $hadoop_head_node $repo \"$components\" $jdk" |vagrant ssh $node
-        ) &
-    done
-    wait
-
-    # run bigtop puppet (master node need to be provisioned before slave nodes)
-    bigtop-puppet ${nodes[0]}
-    for ((i=1 ; i<${#nodes[*]} ; i++)); do
-        bigtop-puppet ${nodes[$i]} &
-    done
-    wait
-    
      echo ***SN: update config
     AdlConfigfileName="${AdlConfigLocalFileWithPath##*/}"
     sudo cp ../../puppet/modules/hadoop/templates/base-core-site.xml $TMPDIR/orig-core-site.xml
