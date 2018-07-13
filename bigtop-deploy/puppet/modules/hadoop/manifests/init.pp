@@ -19,10 +19,9 @@ class hadoop ($hadoop_security_authentication = "simple",
   # Set from facter if available
   $hadoop_storage_dirs = split($::hadoop_storage_dirs, ";"),
   $proxyusers = {
-    oozie => { groups => 'hudson,testuser,root,hadoop,jenkins,oozie,hive,httpfs,hue,users', hosts => "*" },
-     hive => { groups => 'hudson,testuser,root,hadoop,jenkins,oozie,hive,httpfs,hue,users', hosts => "*" },
-      hue => { groups => 'hudson,testuser,root,hadoop,jenkins,oozie,hive,httpfs,hue,users', hosts => "*" },
-   httpfs => { groups => 'hudson,testuser,root,hadoop,jenkins,oozie,hive,httpfs,hue,users', hosts => "*" } },
+    oozie => { groups => 'hudson,testuser,root,hadoop,jenkins,oozie,hive,httpfs,users', hosts => "*" },
+     hive => { groups => 'hudson,testuser,root,hadoop,jenkins,oozie,hive,httpfs,users', hosts => "*" },
+   httpfs => { groups => 'hudson,testuser,root,hadoop,jenkins,oozie,hive,httpfs,users', hosts => "*" } },
   $generate_secrets = false,
 ) {
 
@@ -45,7 +44,7 @@ class hadoop ($hadoop_security_authentication = "simple",
       }
     }
 
-    if ($hadoop::common_hdfs::ha != "disabled" and "standby-namenode" in $roles) {
+    if ("standby-namenode" in $roles and $hadoop::common_hdfs::ha != "disabled") {
       include hadoop::namenode
     }
 
@@ -67,7 +66,7 @@ class hadoop ($hadoop_security_authentication = "simple",
       }
     }
 
-    if ($hadoop::common_hdfs::ha == "disabled" and "secondarynamenode" in $roles) {
+    if ("secondarynamenode" in $roles and $hadoop::common_hdfs::ha == "disabled") {
       include hadoop::secondarynamenode
     }
 

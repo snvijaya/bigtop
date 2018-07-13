@@ -22,8 +22,9 @@ class kafka {
   }
 
   class server(
+      $broker_id = undef,
+      $log_dirs = undef,
       $bind_addr = undef,
-      $broker_id = "0",
       $port = "9092",
       $zookeeper_connection_string = "localhost:2181",
     ) {

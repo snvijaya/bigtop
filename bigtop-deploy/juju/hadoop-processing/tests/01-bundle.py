@@ -27,19 +27,18 @@ class TestBundle(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # classmethod inheritance doesn't work quite right with
-        # setUpClass / tearDownClass, so subclasses have to manually call this
         cls.d = amulet.Deployment(series='xenial')
         with open(cls.bundle_file) as f:
             bun = f.read()
         bundle = yaml.safe_load(bun)
 
-        # NB: strip machine ('to') placement out. amulet loses our machine spec
-        # somewhere between yaml and json; without that spec, charms specifying
-        # machine placement will not deploy. This is ok for now because all
-        # charms in this bundle are using 'reset: false' so we'll already
-        # have our deployment just the way we want it by the time this test
-        # runs. However, it's bad. Remove once this is fixed:
+        # NB: strip machine ('to') placement. We don't seem to be guaranteed
+        # the same machine numbering after the initial bundletester deployment,
+        # so we might fail when redeploying --to a specific machine to run
+        # these bundle tests. This is ok because all charms in this bundle are
+        # using 'reset: false', so we'll already have our deployment just the
+        # way we want it by the time this test runs. This was originally
+        # raised as:
         #  https://github.com/juju/amulet/issues/148
         for service, service_config in bundle['services'].items():
             if 'to' in service_config:

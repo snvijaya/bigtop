@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/sbin/charm-env python3
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,18 +16,16 @@
 # limitations under the License.
 
 import sys
-sys.path.append('lib')
 
 from charmhelpers.core import hookenv
 from charms.layer.apache_bigtop_base import Bigtop
 from charms.reactive import is_state
-
 from jujubigdata.utils import run_as
-
 from path import Path
 
 
 def fail(msg):
+    hookenv.action_set({'outcome': 'failure'})
     hookenv.action_fail(msg)
     sys.exit()
 
@@ -63,8 +61,8 @@ else:
 
 # The smoke tests analyze /etc/passwd. Successful runs will have an 'ubuntu'
 # passwd entry in the output.
+hookenv.action_set({'raw': output})
 if 'ubuntu' not in output:
-    hookenv.action_set({'output': output})
     fail('Unable to analyze passwd file with Pig')
 else:
     hookenv.action_set({'outcome': 'success'})

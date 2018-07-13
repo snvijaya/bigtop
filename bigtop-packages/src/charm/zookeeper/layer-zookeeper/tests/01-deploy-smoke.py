@@ -16,25 +16,21 @@
 # limitations under the License.
 
 import amulet
+import re
 import unittest
-
-TIMEOUT = 1800
 
 
 class TestDeploy(unittest.TestCase):
     """
     Deployment test for Apache Zookeeper quorum
     """
-
     @classmethod
     def setUpClass(cls):
         cls.d = amulet.Deployment(series='xenial')
-
-        cls.d.add('zookeeper', charm='zookeeper', units=3)
-
-        cls.d.setup(timeout=TIMEOUT)
-        cls.d.sentry.wait_for_messages({'zookeeper': 'ready (3 units)'},
-                                       timeout=TIMEOUT)
+        cls.d.add('zookeeper', units=3)
+        cls.d.setup(timeout=1800)
+        cls.d.sentry.wait_for_messages({'zookeeper': re.compile('ready')},
+                                       timeout=1800)
         cls.unit = cls.d.sentry['zookeeper'][0]
 
     def test_deploy(self):

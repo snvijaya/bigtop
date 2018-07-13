@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/sbin/charm-env bash
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -42,4 +42,5 @@ benchmark-finish
 
 DURATION=`expr $STOP - $START`
 benchmark-composite "${DURATION}" 'secs' 'asc'
-benchmark-raw ${RESULT_LOG}
+action-set meta.raw=${RESULT_LOG}
+action-set outcome="success"

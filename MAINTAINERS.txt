@@ -11,9 +11,7 @@ hadoop: mark grover, cos, rvs
 hama: minho kim <minho@apache.org>, edward j. yoon
 hbase: andrew purtell, rvs
 hive: mark grover, youngwoo kim
-hue: oflebbe
 itest: cos, rvs
-kite: youngwoo kim
 mvn publishing/packaging: rvs
 oozie evans ye, rvs
 phoenix: andrew purtell, youngwoo kim
@@ -29,3 +27,4 @@ tez: evans ye, oflebbe
 vagrant recipes: jay vyas, evans ye
 ycsb: youngwoo kim
 zookeeper: sean mackrory, rvs
+elasticsearch: hernan vivani

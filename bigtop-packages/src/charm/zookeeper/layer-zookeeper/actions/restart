@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/sbin/charm-env python3
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,24 +16,20 @@
 # limitations under the License.
 
 import sys
-sys.path.append('lib')  # Add our helpers to our path.
 
-from charmhelpers.core import hookenv  # noqa: E402
-from charms.layer.bigtop_zookeeper import Zookeeper  # noqa: E402
-from charms.reactive import is_state  # noqa: E402
-
-LOG = hookenv.log
-
-LOG("starting restart handler.")
+from charmhelpers.core import hookenv
+from charms.layer.bigtop_zookeeper import Zookeeper
+from charms.reactive import is_state
 
 
 def main():
     if not is_state('zookeeper.started'):
+        hookenv.action_set({'outcome': 'failure'})
         hookenv.action_fail('Cannot restart: Zookeeper has not yet started!')
-        return
+        sys.exit()
 
-    LOG("starting restart handler main.")
-    hookenv.status_set('maintenance', 'restarting ...')
+    hookenv.log("starting restart handler main.")
+    hookenv.status_set('maintenance', 'restarting zookeeper')
     zookeeper = Zookeeper()
     zookeeper.install()
     hookenv.status_set('active', 'ready {}'.format(zookeeper.quorum_check()))

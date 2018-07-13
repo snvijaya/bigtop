@@ -27,14 +27,10 @@ class TestScaleStandalone(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.d = amulet.Deployment(series='xenial')
-        cls.d.add('spark-test-scale', 'cs:xenial/spark', units=3)
+        cls.d.add('spark-test-scale', charm='spark',
+                  units=3, constraints={'mem': '7G'})
         cls.d.setup(timeout=3600)
         cls.d.sentry.wait(timeout=3600)
-
-    # Disable tearDown until amulet supports it
-    # @classmethod
-    # def tearDownClass(cls):
-    #     cls.d.remove_service('spark-test-scale')
 
     def test_scaleup(self):
         """
@@ -74,13 +70,6 @@ class TestScaleStandalone(unittest.TestCase):
         time.sleep(120)
         self.d.sentry.wait_for_messages({"spark-test-scale": ["ready (standalone - master)",
                                                               "ready (standalone)"]}, timeout=900)
-
-        spark1_unit = self.d.sentry['spark-test-scale'][0]
-        spark2_unit = self.d.sentry['spark-test-scale'][1]
-        (stdout1, errcode1) = spark1_unit.run('grep spark.master /etc/spark/conf/spark-defaults.conf')
-        (stdout2, errcode2) = spark2_unit.run('grep spark.master /etc/spark/conf/spark-defaults.conf')
-        # ensure units agree on the master
-        assert stdout1 == stdout2
 
 
 if __name__ == '__main__':

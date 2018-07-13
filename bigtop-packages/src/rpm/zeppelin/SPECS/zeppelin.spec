@@ -33,6 +33,7 @@
 
 # disable repacking jars
 %define __os_install_post %{nil}
+%define __jar_repack ${nil}
 
 Name: zeppelin
 Version: %{zeppelin_version}
@@ -52,6 +53,7 @@ Source5: zeppelin-env.sh
 Source6: zeppelin.svc
 Requires: bigtop-utils >= 0.7, hadoop-client, spark-core >= 1.5, spark-python >= 1.5
 Requires(preun): /sbin/service
+AutoReq: no
 
 %global initd_dir %{_sysconfdir}/init.d
 
@@ -120,9 +122,6 @@ chkconfig --del %{name}
 %defattr(-,root,root,755)
 %config(noreplace) %{config_zeppelin}.dist
 %doc %{doc_zeppelin}
-%{lib_zeppelin}/LICENSE
-%{lib_zeppelin}/README.md
-%{lib_zeppelin}/*.jar
 %{lib_zeppelin}/*.war
 %{lib_zeppelin}/bin
 %{lib_zeppelin}/conf

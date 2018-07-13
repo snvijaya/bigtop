@@ -16,14 +16,9 @@
 class bigtop_toolchain::packages {
   case $operatingsystem{
     /(?i:(centos|fedora))/: {
-      # Fedora 20 and CentOS 7 or above are using mariadb, while CentOS 6 is still mysql
-      if ($operatingsystem == "CentOS") and ($operatingsystemmajrelease <=6) {
-        $mysql_devel="mysql-devel"
-      } else {
-        $mysql_devel="mariadb-devel"
-      }
       $pkgs = [
         "unzip",
+        "rsync",
         "curl",
         "wget",
         "git",
@@ -47,7 +42,7 @@ class bigtop_toolchain::packages {
         "cyrus-sasl-devel",
         "sqlite-devel",
         "openldap-devel",
-        $mysql_devel,
+        "mariadb-devel",
         "rpm-build",
         "redhat-rpm-config",
         "fuse-libs",
@@ -67,7 +62,6 @@ class bigtop_toolchain::packages {
         "libevent-devel",
         "apr-devel",
         "bison",
-        "perl-Env",
         "libffi-devel"
       ]
     }
@@ -113,7 +107,8 @@ class bigtop_toolchain::packages {
         "libevent-devel",
         "bison",
         "flex",
-        "libffi48-devel"
+        "libffi48-devel",
+        "texlive-latex-bin-bin"
       ]
       # fix package dependencies: BIGTOP-2120 and BIGTOP-2152 and BIGTOP-2471
       exec { '/usr/bin/zypper -n install  --force-resolution krb5 libopenssl-devel':
@@ -132,7 +127,7 @@ class bigtop_toolchain::packages {
         require => [Package['libapr1']]
       }
     }
-    Amazon: { $pkgs = [
+    /Amazon/: { $pkgs = [
       "unzip",
       "curl",
       "wget",
@@ -157,7 +152,8 @@ class bigtop_toolchain::packages {
       "bzip2-devel",
       "libffi-devel"
     ] }
-    /(Ubuntu|Debian)/: { $pkgs = [
+    /(Ubuntu|Debian)/: {
+      $pkgs = [
         "unzip",
         "curl",
         "wget",
@@ -183,7 +179,6 @@ class bigtop_toolchain::packages {
         "build-essential",
         "dh-make",
         "libfuse2",
-        "libssh-dev",
         "libjansi-java",
         "python2.7-dev",
         "libxml2-dev",
@@ -192,7 +187,7 @@ class bigtop_toolchain::packages {
         "libsqlite3-dev",
         "libldap2-dev",
         "libsasl2-dev",
-        "libmysqlclient-dev",
+        "libmariadbd-dev",
         "python-setuptools",
         "libkrb5-dev",
         "asciidoc",
@@ -202,8 +197,7 @@ class bigtop_toolchain::packages {
         "libboost-regex-dev",
         "xfslibs-dev",
         "libbz2-dev",
-        "libreadline6",
-        "libreadline6-dev",
+        "libreadline-dev",
         "zlib1g",
         "libapr1",
         "libapr1-dev",
@@ -229,6 +223,12 @@ class bigtop_toolchain::packages {
     file { '/usr/lib/rpm/redhat':
       ensure => 'link',
       target => '/usr/lib/rpm/amazon',
+    }
+  }
+
+  if $operatingsystem == 'CentOS' {
+    package { 'epel-release':
+      ensure => installed
     }
   }
 }
